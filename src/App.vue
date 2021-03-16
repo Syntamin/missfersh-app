@@ -1,32 +1,61 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
-    <router-view/>
+    <transition
+      :name="transitionName"
+      :mode="$router.back ? 'in-out' : 'out-in'"
+    >
+      <router-view class="view"></router-view>
+    </transition>
   </div>
 </template>
+<script>
+import { mapActions, mapState } from 'vuex';
 
-<style lang="less">
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-}
-
-#nav {
-  padding: 30px;
-
-  a {
-    font-weight: bold;
-    color: #2c3e50;
-
-    &.router-link-exact-active {
-      color: #42b983;
+export default {
+  data() {
+    return {
+      transitionName: 'slide-left',
+    };
+  },
+  computed: {
+    ...mapState(['goodsMap']),
+  },
+  watch: {
+    $route(to, from) {
+      if (to.name === 'Classify' && from.name === 'Search') {
+        this.$router.back = true;
+      }
+      if (this.$router.back) {
+        this.transitionName = 'slide-right';
+      } else {
+        this.transitionName = 'slide-left';
+      }
+      this.$router.back = false;
+    },
+  },
+  created() {
+    const result = JSON.parse(localStorage.getItem('goods')) || {};
+    if (result) {
+      this.setGoodsMap(result);
     }
-  }
+  },
+  methods: {
+    ...mapActions(['setGoodsMap']),
+  },
+};
+</script>
+<style lang="less">
+.view {
+  position: absolute;
+  width: 100%;
+  left: 0;
+  top: 0;
+  transition: transform 0.3s linear;
+}
+.slide-left-enter {
+  transform: translate(100%, 0);
+}
+.slide-right-leave-to {
+  transform: translate(100%, 0);
 }
 </style>
